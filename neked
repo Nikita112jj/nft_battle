@@ -1,0 +1,284 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "NFT Battle",
+    Author = "by @neked10",
+    Folder = "NFTBattle",
+    Icon = "gamepad",
+    Theme = "Dark"
+})
+
+local TimeTag = Window:Tag({
+    Title = "--:--",
+    Color = Color3.fromHex("#ff6b31")
+})
+
+task.spawn(function()
+    while true do
+        local now = os.date("*t")
+        local hours = string.format("%02d", now.hour)
+        local minutes = string.format("%02d", now.min)
+        TimeTag:SetTitle(hours .. ":" .. minutes)
+        task.wait(1)
+    end
+end)
+
+local Tabs = {
+    Buy = Window:Tab({Title = "Buy", Icon = "shopping-cart"}),
+    Halloween = Window:Tab({Title = "Halloween", Icon = "shopping-cart"}),
+    Settings = Window:Tab({Title = "Settings", Icon = "settings"})
+}
+
+local StarsValue = 0
+local StarsParagraph = Tabs.Buy:Paragraph({
+    Title = "Your Stars: 0",
+    Desc = "Current balance"
+})
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            local player = game:GetService("Players").LocalPlayer
+            if player:FindFirstChild("_StarsValue") then
+                StarsValue = player._StarsValue.Value
+                StarsParagraph:SetTitle("Your Stars: " .. tostring(StarsValue))
+            end
+        end)
+        task.wait(0.1)
+    end
+end)
+
+local AutoFarmSection = Tabs.Buy:Section({Title = "Auto Farm", Opened = true})
+
+local CaseTypes = {
+    "Daily", "Beggar", "Plodder", "Office Clerk", "Manager", "Director", 
+    "Oligarch", "Frozen Heart", "Bubble Gum", "Cats", "Glitch", "Dream", 
+    "Bloody Night", "M5 F90", "G63", "Porsche 911", "URUS", "Gold", 
+    "Dark", "Palm", "Burj", "Luxury", "Trash"
+}
+
+local Amounts = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+
+local SelectedCase = "Daily"
+local SelectedAmount = 1
+local AutoCasesEnabled = false
+local AutoSellEnabled = false
+
+local CaseDropdown = AutoFarmSection:Dropdown({
+    Title = "Select Case",
+    Values = CaseTypes,
+    Value = "Daily",
+    Callback = function(value)
+        SelectedCase = value
+    end
+})
+
+local AmountDropdown = AutoFarmSection:Dropdown({
+    Title = "Select Amount",
+    Values = Amounts,
+    Value = "1",
+    Callback = function(value)
+        SelectedAmount = tonumber(value)
+    end
+})
+
+local AutoCasesToggle = AutoFarmSection:Toggle({
+    Title = "Auto Cases",
+    Value = false,
+    Callback = function(state)
+        AutoCasesEnabled = state
+        if state then
+            while AutoCasesEnabled do
+                game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(table.unpack({
+                    [1] = SelectedCase,
+                    [2] = SelectedAmount
+                }))
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+local AutoSellToggle = AutoFarmSection:Toggle({
+    Title = "Auto Sell All",
+    Value = false,
+    Callback = function(state)
+        AutoSellEnabled = state
+        if state then
+            while AutoSellEnabled do
+                game:GetService("ReplicatedStorage").Events.Inventory:FireServer(table.unpack({
+                    [1] = "Sell",
+                    [2] = "ALL",
+                    [3] = false
+                }))
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+AutoFarmSection:Button({
+    Title = "Confirm",
+    Callback = function()
+        game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(table.unpack({
+            [1] = SelectedCase,
+            [2] = SelectedAmount
+        }))
+    end
+})
+
+local HalloweenSection = Tabs.Halloween:Section({Title = "Halloween Cases", Opened = true})
+
+local HalloweenCases = {
+    "Witchy", "Hollow", "Underworld", "Nightmare", "Exclusive"
+}
+
+local HalloweenAmounts = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+
+local SelectedHalloweenCase = "Witchy"
+local SelectedHalloweenAmount = 1
+local AutoHalloweenEnabled = false
+local AutoPumpkinEnabled = false
+local AutoSpinEnabled = false
+
+local HalloweenCaseDropdown = HalloweenSection:Dropdown({
+    Title = "Select Halloween Case",
+    Values = HalloweenCases,
+    Value = "Witchy",
+    Callback = function(value)
+        SelectedHalloweenCase = value
+    end
+})
+
+local HalloweenAmountDropdown = HalloweenSection:Dropdown({
+    Title = "Select Amount",
+    Values = HalloweenAmounts,
+    Value = "1",
+    Callback = function(value)
+        SelectedHalloweenAmount = tonumber(value)
+    end
+})
+
+local AutoHalloweenToggle = HalloweenSection:Toggle({
+    Title = "Auto Cases",
+    Value = false,
+    Callback = function(state)
+        AutoHalloweenEnabled = state
+        if state then
+            while AutoHalloweenEnabled do
+                game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(table.unpack({
+                    [1] = SelectedHalloweenCase,
+                    [2] = SelectedHalloweenAmount
+                }))
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+HalloweenSection:Button({
+    Title = "Confirm",
+    Callback = function()
+        game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(table.unpack({
+            [1] = SelectedHalloweenCase,
+            [2] = SelectedHalloweenAmount
+        }))
+    end
+})
+
+local AutoPumpkinToggle = HalloweenSection:Toggle({
+    Title = "Auto Collect Pumpkin",
+    Value = false,
+    Callback = function(state)
+        AutoPumpkinEnabled = state
+        if state then
+            while AutoPumpkinEnabled do
+                game:GetService("ReplicatedStorage").Events.Halloween:InvokeServer("Claim")
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+local AutoSpinToggle = HalloweenSection:Toggle({
+    Title = "Auto Spin",
+    Value = false,
+    Callback = function(state)
+        AutoSpinEnabled = state
+        if state then
+            while AutoSpinEnabled do
+                game:GetService("ReplicatedStorage").Events.Halloween:InvokeServer("Spin")
+                task.wait(0.1)
+            end
+        end
+    end
+})
+
+local PlayerStats = {
+    Players = "?/?",
+    JobId = game.JobId
+}
+
+task.spawn(function()
+    while true do
+        local players = game:GetService("Players")
+        PlayerStats.Players = #players:GetPlayers() .. "/" .. players.MaxPlayers
+        task.wait(5)
+    end
+end)
+
+Tabs.Settings:Paragraph({
+    Title = "Player Statistics",
+    Desc = "Players: " .. PlayerStats.Players .. "\nJobId: " .. PlayerStats.JobId
+})
+
+Tabs.Settings:Button({
+    Title = "Copy JobId",
+    Callback = function()
+        setclipboard(PlayerStats.JobId)
+        WindUI:Notify({
+            Title = "JobId Copied",
+            Content = "JobId copied to clipboard!",
+            Duration = 3
+        })
+    end
+})
+
+Tabs.Settings:Button({
+    Title = "Server Hop",
+    Callback = function()
+        WindUI:Notify({
+            Title = "Server Hop",
+            Content = "Moving to new server...",
+            Duration = 3
+        })
+        game:GetService("TeleportService"):Teleport(game.PlaceId)
+    end
+})
+
+Tabs.Settings:Button({
+    Title = "ReJoin",
+    Callback = function()
+        WindUI:Notify({
+            Title = "ReJoining",
+            Content = "Rejoining current server...",
+            Duration = 3
+        })
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId)
+    end
+})
+
+local themes = {}
+for themeName, _ in pairs(WindUI:GetThemes()) do
+    table.insert(themes, themeName)
+end
+table.sort(themes)
+
+Tabs.Settings:Dropdown({
+    Title = "Select Theme",
+    Values = themes,
+    Value = "Dark",
+    Callback = function(theme)
+        WindUI:SetTheme(theme)
+    end
+})
